@@ -1,0 +1,56 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP .NET Core service.
+
+version: '3.4'
+
+services:
+  bcxplatformmigrator:
+    image: bcxplatformmigrator
+    build:
+      context: .
+      dockerfile: src/Bcx.Platform.DbMigrator/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=${ConnectionStrings__Default}
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    networks:
+      - dev-network
+    depends_on:
+      - postgres-dev
+  bcxplatformhttpapihost:
+    image: bcxplatformhttpapihost
+    build:
+      context: .
+      dockerfile: src/Bcx.Platform.HttpApi.Host/Dockerfile
+    ports:
+      - 5000:5000
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=${ConnectionStrings__Default}
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
+    networks:
+      - dev-network
+    depends_on:
+      - postgres-dev
+      - bcxplatformmigrator
+  postgres-dev:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: "admin"
+    ports:
+      - "5432:5432"
+    # Persist database files
+    #volumes:
+    #  - c:/data/postgresql:/var/lib/postgresql/data 
+    volumes:
+         - pgdata:/var/lib/postgresql/data
+         - ./sql/create_database.sql:/docker-entrypoint-initdb.d/create_database.sql
+    networks:
+      - dev-network
+networks: 
+  dev-network:
+    driver: bridge
+    
+volumes: 
+     pgdata:

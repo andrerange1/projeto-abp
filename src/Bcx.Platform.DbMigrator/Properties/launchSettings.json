@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Bcx.Platform.DbMigrator": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
